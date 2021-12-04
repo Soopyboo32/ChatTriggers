@@ -5,16 +5,32 @@ import com.chattriggers.ctjs.engine.IRegister
 import com.chattriggers.ctjs.minecraft.objects.display.Display
 import com.chattriggers.ctjs.minecraft.objects.display.DisplayLine
 import com.chattriggers.ctjs.minecraft.objects.gui.Gui
-import org.mozilla.javascript.NativeObject
+import com.chattriggers.ctjs.triggers.OnTrigger
+import org.graalvm.polyglot.Value
+import kotlin.reflect.full.memberFunctions
 
 /*
-This file holds the "glue" for this language.
-
-Certain classes have triggers inside of them that need to know what loader to use,
-and that's where these implementations come in.
+ * This file holds the "glue" for this language.
+ *
+ * Certain classes have triggers inside them that need to know what loader to use,
+ * and that's where these implementations come in.
  */
 
-object JSRegister : IRegister {
+object JSRegister : IRegister<Value> {
+    override fun register(triggerType: String, method: Value): OnTrigger {
+        val name = triggerType.lowercase()
+
+        var func = IRegister.methodMap[name]
+
+        if (func == null) {
+            func = this::class.memberFunctions.firstOrNull {
+                it.name.lowercase() == "register$name"
+            } ?: throw NoSuchMethodException("No trigger type named '$triggerType'")
+            IRegister.methodMap[name] = func
+        }
+
+        return func.call(this, method) as OnTrigger
+    }
     override fun getImplementationLoader(): ILoader = JSLoader
 }
 
