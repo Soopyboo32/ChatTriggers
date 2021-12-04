@@ -117,7 +117,7 @@ shadowJar {
     exclude 'LICENSE.txt'
     exclude 'META-INF/LICENSE.txt'
     exclude "**/module-info.class"
-    exclude 'META-INF/versions/9/**'
+    exclude 'META-INF/versions/**'
 
     manifest.attributes(
         "FMLCorePluginContainsFMLMod": "true",
@@ -129,11 +129,15 @@ shadowJar {
     mergeServiceFiles()
 }
 
-reobfJar.dependsOn tasks.shadowJar
-
 reobf {
     shadowJar { }
 }
+
+reobfJar {
+    enabled = false
+}
+
+assemble.dependsOn reobfShadowJar
 
 processResources {
     inputs.property "version", project.version
