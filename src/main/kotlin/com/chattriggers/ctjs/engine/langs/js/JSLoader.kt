@@ -72,6 +72,7 @@ object JSLoader : ILoader {
             true
         }
         .hostClassLoader(classLoader)
+        .fileSystem(JSFileSystem)
         .option("js.esm-eval-returns-exports", "true")
         .build()
 
