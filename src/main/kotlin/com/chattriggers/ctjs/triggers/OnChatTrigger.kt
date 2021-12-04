@@ -3,8 +3,11 @@ package com.chattriggers.ctjs.triggers
 import com.chattriggers.ctjs.engine.ILoader
 import com.chattriggers.ctjs.minecraft.libs.EventLib
 import com.chattriggers.ctjs.utils.kotlin.External
+import com.chattriggers.ctjs.utils.kotlin.getMemberAs
+import com.oracle.truffle.js.runtime.builtins.JSRegExpObject
 import net.minecraftforge.client.event.ClientChatReceivedEvent
-import org.mozilla.javascript.regexp.NativeRegExp
+import org.graalvm.polyglot.Value
+import java.util.*
 
 @External
 class OnChatTrigger(method: Any, type: TriggerType, loader: ILoader) : OnTrigger(method, type, loader) {
@@ -36,34 +39,38 @@ class OnChatTrigger(method: Any, type: TriggerType, loader: ILoader) : OnTrigger
         val flags = mutableSetOf<RegexOption>()
         var source = ".+"
 
-        when (chatCriteria) {
-            is String -> {
-                formatted = "&" in chatCriteria
+        if (chatCriteria is String) {
+            formatted = "&" in chatCriteria
 
-                val replacedCriteria = Regex.escape(chatCriteria.replace("\n", "->newLine<-"))
-                    .replace(Regex("\\\$\\{[^*]+?}"), "\\\\E(.+)\\\\Q")
-                    .replace(Regex("\\$\\{\\*?}"), "\\\\E(?:.+)\\\\Q")
+            val replacedCriteria = Regex.escape(chatCriteria.replace("\n", "->newLine<-"))
+                .replace(Regex("\\\$\\{[^*]+?}"), "\\\\E(.+)\\\\Q")
+                .replace(Regex("\\$\\{\\*?}"), "\\\\E(?:.+)\\\\Q")
 
-                if (caseInsensitive)
-                    flags.add(RegexOption.IGNORE_CASE)
+            if (caseInsensitive)
+                flags.add(RegexOption.IGNORE_CASE)
 
-                if ("" != chatCriteria)
-                    source = replacedCriteria
+            if ("" != chatCriteria)
+                source = replacedCriteria
+        } else {
+            val value = Value.asValue(chatCriteria)
+
+            try {
+                value.`as`(JSRegExpObject::class.java)
+            } catch (e: Throwable) {
+                throw IllegalArgumentException("setCriteria expects a String or RegExp Object")
             }
-            is NativeRegExp -> {
-                if (chatCriteria["ignoreCase"] as Boolean || caseInsensitive)
-                    flags.add(RegexOption.IGNORE_CASE)
 
-                if (chatCriteria["multiline"] as Boolean)
-                    flags.add(RegexOption.MULTILINE)
+            if (value.getMemberAs<Boolean>("ignoreCase") == true || caseInsensitive)
+                flags.add(RegexOption.IGNORE_CASE)
 
-                source = (chatCriteria["source"] as String).let {
-                    if ("" == it) ".+" else it
-                }
+            if (value.getMemberAs<Boolean>("multiline") == true)
+                flags.add(RegexOption.MULTILINE)
 
-                formatted = "&" in source
+            source = value.getMemberAs<String>("source")!!.let {
+                if ("" == it) ".+" else it
             }
-            else -> throw IllegalArgumentException("Expected String or Regexp Object")
+
+            formatted = "&" in source
         }
 
         criteriaPattern = Regex(source, flags)

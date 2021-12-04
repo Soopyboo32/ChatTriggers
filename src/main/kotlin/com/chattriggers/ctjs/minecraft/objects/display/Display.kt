@@ -2,7 +2,8 @@ package com.chattriggers.ctjs.minecraft.objects.display
 
 import com.chattriggers.ctjs.utils.kotlin.External
 import com.chattriggers.ctjs.utils.kotlin.NotAbstract
-import org.mozilla.javascript.NativeObject
+import com.oracle.truffle.js.runtime.JSRuntime
+import org.graalvm.polyglot.Value
 
 @External
 @NotAbstract
@@ -28,26 +29,21 @@ abstract class Display {
         DisplayHandler.registerDisplay(this)
     }
 
-    constructor(config: NativeObject?) {
-        shouldRender = config.getOption("shouldRender", true).toBoolean()
-        renderX = config.getOption("renderX", 0).toFloat()
-        renderY = config.getOption("renderY", 0).toFloat()
+    constructor(config: Value) {
+        shouldRender = config.getMember("shouldRender")?.let(JSRuntime::toBoolean) ?: true
+        renderX = config.getMember("renderX")?.let(JSRuntime::toNumber)?.toFloat() ?: 0f
+        renderY = config.getMember("renderY")?.let(JSRuntime::toNumber)?.toFloat() ?: 0f
 
-        backgroundColor = config.getOption("backgroundColor", 0x50000000).toLong()
-        textColor = config.getOption("textColor", 0xffffffff).toLong()
+        backgroundColor = config.getMember("backgroundColor")?.let(JSRuntime::toNumber)?.toLong() ?: 0x50000000
+        textColor = config.getMember("textColor")?.let(JSRuntime::toNumber)?.toLong() ?: 0xffffffff
 
-        setBackground(config.getOption("background", DisplayHandler.Background.NONE))
-        setAlign(config.getOption("align", DisplayHandler.Align.LEFT))
-        setOrder(config.getOption("order", DisplayHandler.Order.DOWN))
+        minWidth = config.getMember("minWidth")?.let(JSRuntime::toNumber)?.toFloat() ?: 0f
 
-        minWidth = config.getOption("minWidth", 0f).toFloat()
+        setBackground(config.getMember("background") ?: DisplayHandler.Background.NONE)
+        setAlign(config.getMember("align") ?: DisplayHandler.Align.LEFT)
+        setOrder(config.getMember("order") ?: DisplayHandler.Order.DOWN)
 
         DisplayHandler.registerDisplay(this)
-    }
-
-    private fun NativeObject?.getOption(key: String, default: Any): String {
-        if (this == null) return default.toString()
-        return getOrDefault(key, default).toString()
     }
 
     fun getBackgroundColor(): Long = backgroundColor

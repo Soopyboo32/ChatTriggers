@@ -9,9 +9,10 @@ import com.chattriggers.ctjs.triggers.OnTrigger
 import com.chattriggers.ctjs.triggers.TriggerType
 import com.chattriggers.ctjs.utils.kotlin.External
 import com.chattriggers.ctjs.utils.kotlin.NotAbstract
+import com.oracle.truffle.js.runtime.JSRuntime
+import org.graalvm.polyglot.Value
 import org.lwjgl.input.Mouse
 import org.lwjgl.util.vector.Vector2f
-import org.mozilla.javascript.NativeObject
 
 @External
 @NotAbstract
@@ -36,20 +37,16 @@ abstract class DisplayLine {
         for (i in 0..5) mouseState[i] = false
     }
 
-    constructor(text: String, config: NativeObject) {
+    constructor(text: String, config: Value) {
         setText(text)
-        for (i in 0..5) mouseState[i] = false
+        for (i in 0..5)
+            mouseState[i] = false
 
-        textColor = config.getOption("textColor", null)?.toLong()
-        backgroundColor = config.getOption("backgroundColor", null)?.toLong()
+        textColor = config.getMember("textColor")?.let(JSRuntime::toNumber)?.toLong()
+        backgroundColor = config.getMember("backgroundColor")?.let(JSRuntime::toNumber)?.toLong()
 
-        setAlign(config.getOption("align", null))
-        setBackground(config.getOption("background", null))
-    }
-
-    private fun NativeObject?.getOption(key: String, default: Any?): String? {
-        if (this == null) return default?.toString()
-        return getOrDefault(key, default).toString()
+        setAlign(config.getMember("align"))
+        setBackground(config.getMember("background"))
     }
 
     fun getText(): Text = text

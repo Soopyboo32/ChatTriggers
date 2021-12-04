@@ -8,11 +8,13 @@ import com.chattriggers.ctjs.minecraft.wrappers.Client
 import com.chattriggers.ctjs.minecraft.wrappers.Player
 import com.chattriggers.ctjs.printToConsole
 import com.chattriggers.ctjs.utils.kotlin.External
+import com.chattriggers.ctjs.utils.kotlin.getMemberAs
 import com.chattriggers.ctjs.utils.kotlin.times
+import com.oracle.truffle.js.runtime.JSRuntime
 import net.minecraft.client.gui.ChatLine
 import net.minecraftforge.client.ClientCommandHandler
 import net.minecraftforge.client.event.ClientChatReceivedEvent
-import org.mozilla.javascript.NativeObject
+import org.graalvm.polyglot.Value
 import java.util.regex.Pattern
 import kotlin.math.roundToInt
 
@@ -193,13 +195,13 @@ object ChatLib {
      * @param replacements the new message(s) to be put in replace of the old one
      */
     @JvmStatic
-    fun editChat(regexp: NativeObject, vararg replacements: Message) {
-        val global = regexp["global"] as Boolean
-        val ignoreCase = regexp["ignoreCase"] as Boolean
-        val multiline = regexp["multiline"] as Boolean
+    fun editChat(regexp: Value, vararg replacements: Message) {
+        val global = regexp.getMemberAs<Boolean>("global")!!
+        val ignoreCase = regexp.getMemberAs<Boolean>("ignoreCase")!!
+        val multiline = regexp.getMemberAs<Boolean>("multiline")!!
 
         val flags = (if (ignoreCase) Pattern.CASE_INSENSITIVE else 0) or if (multiline) Pattern.MULTILINE else 0
-        val pattern = Pattern.compile(regexp["source"] as String, flags)
+        val pattern = Pattern.compile(regexp.getMemberAs("source")!!, flags)
 
         editChat(
             {
