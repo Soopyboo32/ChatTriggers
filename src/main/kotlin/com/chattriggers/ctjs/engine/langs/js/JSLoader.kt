@@ -74,6 +74,14 @@ object JSLoader : ILoader {
         .hostClassLoader(classLoader)
         .fileSystem(JSFileSystem)
         .option("js.esm-eval-returns-exports", "true")
+        .option("js.global-property", "true")
+        .option("js.load", "false")
+        .option("js.class-fields", "true")
+        .option("js.top-level-await", "true")
+        .option("js.unhandled-rejections", "warn")
+        .option("js.error-cause", "true")
+        .option("js.import-assertions", "true")
+        .option("js.json-modules", "true")
         .build()
 
     override fun setup(jars: List<URL>) {
