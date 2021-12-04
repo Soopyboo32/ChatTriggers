@@ -5,6 +5,7 @@ import com.chattriggers.ctjs.engine.IRegister
 import com.chattriggers.ctjs.minecraft.objects.display.Display
 import com.chattriggers.ctjs.minecraft.objects.display.DisplayLine
 import com.chattriggers.ctjs.minecraft.objects.gui.Gui
+import com.chattriggers.ctjs.minecraft.wrappers.objects.threading.WrappedThread
 import com.chattriggers.ctjs.triggers.OnTrigger
 import org.graalvm.polyglot.Value
 import kotlin.reflect.full.memberFunctions
@@ -52,4 +53,8 @@ class JSDisplay : Display {
     override fun createDisplayLine(text: String): DisplayLine {
         return JSDisplayLine(text)
     }
+}
+
+class JSWrappedThread(task: Runnable) : WrappedThread(task) {
+    override fun getLoader() = JSLoader
 }

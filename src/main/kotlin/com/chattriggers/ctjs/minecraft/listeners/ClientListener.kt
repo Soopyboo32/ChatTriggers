@@ -28,7 +28,6 @@ import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent
 import org.lwjgl.input.Mouse
 import org.lwjgl.util.vector.Vector3f
-import org.mozilla.javascript.Context
 
 object ClientListener {
     private var ticksPassed: Int = 0
@@ -114,14 +113,8 @@ object ClientListener {
                 override fun channelRead(ctx: ChannelHandlerContext?, msg: Any?) {
                     val packetReceivedEvent = CancellableEvent()
 
-                    if (msg is Packet<*>) {
-                        Context.enter()
-                        try {
-                            TriggerType.PacketReceived.triggerAll(msg, packetReceivedEvent)
-                        } finally {
-                            Context.exit()
-                        }
-                    }
+                    if (msg is Packet<*>)
+                        TriggerType.PacketReceived.triggerAll(msg, packetReceivedEvent)
 
                     if (!packetReceivedEvent.isCancelled())
                         ctx?.fireChannelRead(msg)
@@ -130,14 +123,8 @@ object ClientListener {
                 override fun write(ctx: ChannelHandlerContext?, msg: Any?, promise: ChannelPromise?) {
                     val packetSentEvent = CancellableEvent()
 
-                    if (msg is Packet<*>) {
-                        Context.enter()
-                        try {
-                            TriggerType.PacketSent.triggerAll(msg, packetSentEvent)
-                        } finally {
-                            Context.exit()
-                        }
-                    }
+                    if (msg is Packet<*>)
+                        TriggerType.PacketSent.triggerAll(msg, packetSentEvent)
 
                     if (!packetSentEvent.isCancelled())
                         ctx?.write(msg, promise)

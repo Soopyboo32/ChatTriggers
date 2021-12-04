@@ -72,4 +72,8 @@ enum class TriggerType {
     fun triggerAll(vararg args: Any?) {
         ModuleManager.trigger(this, args)
     }
+
+    fun triggerAllWithContextSwitch(vararg args: Any?) {
+        ModuleManager.triggerWithContextSwitch(this, args)
+    }
 }
