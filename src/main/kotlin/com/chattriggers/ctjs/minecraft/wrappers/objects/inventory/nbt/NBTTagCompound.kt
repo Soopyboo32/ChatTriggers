@@ -4,7 +4,7 @@ import com.chattriggers.ctjs.utils.kotlin.MCNBTBase
 import com.chattriggers.ctjs.utils.kotlin.MCNBTTagCompound
 import net.minecraft.nbt.NBTTagByteArray
 import net.minecraft.nbt.NBTTagIntArray
-import org.mozilla.javascript.NativeObject
+import org.graalvm.polyglot.Value
 
 class NBTTagCompound(override val rawNBT: MCNBTTagCompound) : NBTBase(rawNBT) {
     val tagMap: Map<String, MCNBTBase>
@@ -104,7 +104,5 @@ class NBTTagCompound(override val rawNBT: MCNBTTagCompound) : NBTBase(rawNBT) {
         rawNBT.removeTag(key)
     }
 
-    fun toObject(): NativeObject {
-        return rawNBT.toObject()
-    }
+    fun toObject() = rawNBT.toObject()
 }
