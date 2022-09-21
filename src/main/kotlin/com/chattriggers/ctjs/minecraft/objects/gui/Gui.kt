@@ -18,6 +18,8 @@ abstract class Gui : GuiScreen() {
     private var onMouseReleased: RegularTrigger? = null
     private var onMouseDragged: RegularTrigger? = null
     private var onActionPerformed: RegularTrigger? = null
+    private var onOpened: RegularTrigger? = null
+    private var onClosed: RegularTrigger? = null
 
     private var mouseX = 0
     private var mouseY = 0
@@ -35,6 +37,7 @@ abstract class Gui : GuiScreen() {
 
     fun open() {
         GuiHandler.openGui(this)
+        onOpened?.trigger(arrayOf(this))
     }
 
     fun close() {
@@ -154,6 +157,40 @@ abstract class Gui : GuiScreen() {
     fun registerActionPerformed(method: Any) = run {
         onActionPerformed = RegularTrigger(method, TriggerType.Other, getLoader())
         onActionPerformed
+    }
+
+    /**
+     * Registers a method to be run when the gui is opened.
+     * Arguments passed through to method:
+     * - the gui that is opened
+     *
+     * @param method the method to run
+     * @return the trigger
+     */
+    fun registerOpened(method: Any) = run {
+        onOpened = RegularTrigger(method, TriggerType.Other, getLoader())
+        onOpened
+    }
+
+    /**
+     * Registers a method to be run when the gui is closed.
+     * Arguments passed through to method:
+     * - the gui that is closed
+     *
+     * @param method the method to run
+     * @return the trigger
+     */
+    fun registerClosed(method: Any) = run {
+        onClosed = RegularTrigger(method, TriggerType.Other, getLoader())
+        onClosed
+    }
+
+    /**
+     * Internal method to run trigger. Not meant for public use
+     */
+    override fun onGuiClosed() {
+        super.onGuiClosed()
+        onClosed?.trigger(arrayOf(this))
     }
 
     /**
